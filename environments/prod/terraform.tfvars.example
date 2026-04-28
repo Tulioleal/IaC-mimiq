@@ -1,0 +1,31 @@
+project_id = "my-gcp-project"
+region     = "us-central1"
+zone       = "us-central1-a"
+
+bucket_name_prefix = "my-org-pvc-prod"
+
+allowed_ssh_cidrs = [
+  "203.0.113.10/32",
+]
+
+allowed_app_cidrs = [
+  "203.0.113.10/32",
+]
+
+backend_container_image = "ghcr.io/my-org/pvc-backend:latest"
+
+backend_env = {
+  LOG_LEVEL = "INFO"
+}
+
+backend_secret_env = {
+  LLM_API_KEY    = "replace-me"
+  VAST_API_KEY   = "replace-me"
+  X_ADMIN_KEY    = "replace-me"
+}
+
+db_user_password = "replace-me"
+
+labels = {
+  owner = "platform"
+}
