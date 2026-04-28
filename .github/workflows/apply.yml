@@ -15,7 +15,6 @@ concurrency:
   cancel-in-progress: false
 env:
   TF_INPUT: "0"
-  TF_CLI_ARGS: "-no-color -input=false"
   TF_VAR_db_user_password: ${{ secrets.TF_VAR_db_user_password }}
   TF_VAR_backend_secret_env: ${{ secrets.TF_VAR_backend_secret_env }}
 jobs:
@@ -36,14 +35,14 @@ jobs:
       - name: Setup OpenTofu
         uses: opentofu/setup-opentofu@v1
       - name: Format check
-        run: tofu fmt -check -recursive ../..
+        run: tofu fmt -check -recursive -no-color ../..
       - name: Init
-        run: tofu init -backend-config="bucket=${{ vars.TOFU_STATE_BUCKET }}"
+        run: tofu init -no-color -input=false -backend-config="bucket=${{ vars.TOFU_STATE_BUCKET }}"
       - name: Validate
-        run: tofu validate
+        run: tofu validate -no-color
       - name: Plan
-        run: tofu plan -lock-timeout=5m -out=tfplan
+        run: tofu plan -no-color -input=false -lock-timeout=5m -out=tfplan
       - name: Apply
-        run: tofu apply -lock-timeout=5m tfplan
+        run: tofu apply -no-color -input=false -lock-timeout=5m tfplan
       - name: Outputs
         run: tofu output
