@@ -1,0 +1,57 @@
+#!/bin/bash
+set -euo pipefail
+
+export DEBIAN_FRONTEND=noninteractive
+
+apt-get update
+apt-get install -y docker.io jq python3
+
+systemctl enable docker
+systemctl restart docker
+
+install -d -m 0755 /opt/pvc
+
+cat > /opt/pvc/backend-env.json <<'EOF'
+${environment_json}
+EOF
+
+python3 - <<'PY'
+import json
+from pathlib import Path
+
+source = Path("/opt/pvc/backend-env.json")
+target = Path("/opt/pvc/backend.env")
+
+payload = json.loads(source.read_text())
+lines = [f"{key}={value}" for key, value in sorted(payload.items())]
+target.write_text("\n".join(lines) + "\n")
+PY
+
+chmod 0600 /opt/pvc/backend.env
+
+%{ if container_image != "" ~}
+cat > /etc/systemd/system/pvc-backend.service <<'EOF'
+[Unit]
+Description=PVC backend container
+After=docker.service network-online.target
+Requires=docker.service
+
+[Service]
+Restart=always
+ExecStartPre=-/usr/bin/docker rm -f pvc-backend
+ExecStart=/usr/bin/docker run --name pvc-backend --pull always --restart no --env-file /opt/pvc/backend.env -p ${service_port}:${container_port} ${container_image}
+ExecStop=/usr/bin/docker stop pvc-backend
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+systemctl daemon-reload
+systemctl enable pvc-backend
+systemctl restart pvc-backend
+%{ else ~}
+cat > /opt/pvc/README <<'EOF'
+Docker is installed, but no backend container image was configured.
+Set backend_container_image and re-apply to have the VM run the FastAPI container automatically.
+EOF
+%{ endif ~}
