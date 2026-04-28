@@ -30,3 +30,52 @@ variable "labels" {
   type        = map(string)
   default     = {}
 }
+
+variable "github_repository" {
+  description = "GitHub repository allowed to impersonate the CI service account, in OWNER/REPO format."
+  type        = string
+
+  validation {
+    condition     = can(regex("^[^/]+/[^/]+$", var.github_repository))
+    error_message = "github_repository must use OWNER/REPO format."
+  }
+}
+
+variable "github_ref" {
+  description = "Git ref allowed to authenticate through the GitHub OIDC provider."
+  type        = string
+  default     = "refs/heads/main"
+}
+
+variable "github_actions_service_account_id" {
+  description = "Account ID for the service account impersonated by GitHub Actions."
+  type        = string
+  default     = "github-actions-tofu"
+}
+
+variable "github_actions_workload_identity_pool_id" {
+  description = "Workload Identity Pool ID for GitHub Actions OIDC identities."
+  type        = string
+  default     = "github"
+}
+
+variable "github_actions_workload_identity_provider_id" {
+  description = "Workload Identity Pool Provider ID for GitHub Actions OIDC."
+  type        = string
+  default     = "github-actions"
+}
+
+variable "github_actions_project_roles" {
+  description = "Project IAM roles granted to the GitHub Actions service account for OpenTofu apply."
+  type        = list(string)
+  default = [
+    "roles/cloudsql.admin",
+    "roles/compute.admin",
+    "roles/iam.serviceAccountAdmin",
+    "roles/iam.serviceAccountUser",
+    "roles/resourcemanager.projectIamAdmin",
+    "roles/servicenetworking.networksAdmin",
+    "roles/serviceusage.serviceUsageAdmin",
+    "roles/storage.admin",
+  ]
+}

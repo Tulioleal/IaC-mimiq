@@ -1,7 +1,8 @@
-project_id         = "my-gcp-project"
-region             = "us-central1"
-state_bucket_name  = "my-org-pvc-tofu-state"
+project_id            = "my-gcp-project"
+region                = "us-central1"
+state_bucket_name     = "my-org-pvc-tofu-state"
 state_bucket_location = "US"
+github_repository     = "my-org/my-repo"
 
 labels = {
   app = "pvc"
