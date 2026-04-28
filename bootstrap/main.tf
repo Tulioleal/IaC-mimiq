@@ -2,6 +2,7 @@ locals {
   bucket_location = coalesce(var.state_bucket_location, var.region)
 
   required_services = toset([
+    "cloudresourcemanager.googleapis.com",
     "iam.googleapis.com",
     "iamcredentials.googleapis.com",
     "storage.googleapis.com",
