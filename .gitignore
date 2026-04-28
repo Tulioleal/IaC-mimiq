@@ -1,0 +1,59 @@
+# OpenTofu working directories
+.terraform/
+
+# Local variable files
+*.tfvars
+*.tfvars.json
+
+# Plan files
+*.tfplan
+*.plan
+
+# Override files
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Crash logs
+crash.log
+crash.*.log
+
+# CLI config and state backups
+.terraformrc
+terraform.rc
+*.tfstate
+*.tfstate.*
+
+# Generated environment files
+*.auto.tfvars
+*.auto.tfvars.json
+# GitHub Actions generated credentials
+gha-creds-*.json
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Cloud and service account credentials
+credentials*.json
+*credentials*.json
+key.json
+*.json.key
+service-account*.json
+*service-account*.json
+
+# Private keys and certificates
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Local logs
+*.log
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
