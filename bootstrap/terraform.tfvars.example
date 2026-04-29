@@ -4,6 +4,9 @@ state_bucket_name     = "my-org-pvc-tofu-state"
 state_bucket_location = "US"
 github_repository     = "my-org/my-repo"
 
+# Set this when the separate frontend repo exists.
+frontend_github_repository = null
+
 labels = {
   app = "pvc"
 }

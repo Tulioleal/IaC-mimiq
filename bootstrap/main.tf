@@ -1,6 +1,9 @@
 locals {
   bucket_location = coalesce(var.state_bucket_location, var.region)
 
+  frontend_github_enabled    = var.frontend_github_repository != null && var.frontend_github_repository != ""
+  frontend_github_repository = coalesce(var.frontend_github_repository, "unused/disabled")
+
   required_services = toset([
     "cloudresourcemanager.googleapis.com",
     "iam.googleapis.com",
@@ -109,4 +112,55 @@ resource "google_project_iam_member" "github_actions" {
   project = var.project_id
   role    = each.value
   member  = "serviceAccount:${google_service_account.github_actions.email}"
+}
+
+resource "google_service_account" "frontend_github_actions" {
+  count = local.frontend_github_enabled ? 1 : 0
+
+  project      = var.project_id
+  account_id   = var.frontend_github_actions_service_account_id
+  display_name = "GitHub Actions Frontend CI"
+  description  = "Service account impersonated by the frontend repository to push Docker images."
+
+  depends_on = [google_project_service.required]
+}
+
+resource "google_iam_workload_identity_pool_provider" "frontend_github" {
+  count = local.frontend_github_enabled ? 1 : 0
+
+  project                            = var.project_id
+  workload_identity_pool_id          = google_iam_workload_identity_pool.github.workload_identity_pool_id
+  workload_identity_pool_provider_id = var.frontend_github_actions_workload_identity_provider_id
+  display_name                       = "Frontend GitHub Actions OIDC"
+  description                        = "OIDC provider for ${local.frontend_github_repository} GitHub Actions workflows on main."
+
+  attribute_mapping = {
+    "google.subject"             = "assertion.sub"
+    "attribute.actor"            = "assertion.actor"
+    "attribute.ref"              = "assertion.ref"
+    "attribute.repository"       = "assertion.repository"
+    "attribute.repository_owner" = "assertion.repository_owner"
+  }
+
+  attribute_condition = "assertion.repository == '${local.frontend_github_repository}' && assertion.ref == '${var.frontend_github_ref}'"
+
+  oidc {
+    issuer_uri = "https://token.actions.githubusercontent.com"
+  }
+}
+
+resource "google_service_account_iam_member" "frontend_github_actions_workload_identity_user" {
+  count = local.frontend_github_enabled ? 1 : 0
+
+  service_account_id = google_service_account.frontend_github_actions[0].name
+  role               = "roles/iam.workloadIdentityUser"
+  member             = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github.name}/attribute.repository/${local.frontend_github_repository}"
+}
+
+resource "google_project_iam_member" "frontend_github_actions" {
+  for_each = local.frontend_github_enabled ? toset(var.frontend_github_actions_project_roles) : toset([])
+
+  project = var.project_id
+  role    = each.value
+  member  = "serviceAccount:${google_service_account.frontend_github_actions[0].email}"
 }

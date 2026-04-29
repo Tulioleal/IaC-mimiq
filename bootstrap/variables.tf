@@ -69,13 +69,52 @@ variable "github_actions_project_roles" {
   description = "Project IAM roles granted to the GitHub Actions service account for OpenTofu apply."
   type        = list(string)
   default = [
+    "roles/artifactregistry.admin",
     "roles/cloudsql.admin",
     "roles/compute.admin",
     "roles/iam.serviceAccountAdmin",
     "roles/iam.serviceAccountUser",
     "roles/resourcemanager.projectIamAdmin",
+    "roles/run.admin",
     "roles/servicenetworking.networksAdmin",
     "roles/serviceusage.serviceUsageAdmin",
     "roles/storage.admin",
+  ]
+}
+
+variable "frontend_github_repository" {
+  description = "Optional GitHub frontend repository allowed to impersonate the frontend CI service account, in OWNER/REPO format. Leave null until the repo exists."
+  type        = string
+  default     = null
+
+  validation {
+    condition     = var.frontend_github_repository == null || can(regex("^[^/]+/[^/]+$", var.frontend_github_repository))
+    error_message = "frontend_github_repository must use OWNER/REPO format when set."
+  }
+}
+
+variable "frontend_github_ref" {
+  description = "Git ref allowed to authenticate through the frontend GitHub OIDC provider."
+  type        = string
+  default     = "refs/heads/main"
+}
+
+variable "frontend_github_actions_service_account_id" {
+  description = "Account ID for the service account impersonated by the frontend GitHub Actions workflow."
+  type        = string
+  default     = "github-actions-frontend"
+}
+
+variable "frontend_github_actions_workload_identity_provider_id" {
+  description = "Workload Identity Pool Provider ID for the frontend GitHub Actions OIDC provider."
+  type        = string
+  default     = "github-actions-frontend"
+}
+
+variable "frontend_github_actions_project_roles" {
+  description = "Project IAM roles granted to the frontend GitHub Actions service account."
+  type        = list(string)
+  default = [
+    "roles/artifactregistry.writer",
   ]
 }
