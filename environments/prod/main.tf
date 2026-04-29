@@ -12,6 +12,7 @@ locals {
   )
 
   required_services = toset([
+    "artifactregistry.googleapis.com",
     "compute.googleapis.com",
     "iam.googleapis.com",
     "logging.googleapis.com",
@@ -19,6 +20,7 @@ locals {
     "servicenetworking.googleapis.com",
     "sqladmin.googleapis.com",
     "storage.googleapis.com",
+    "run.googleapis.com",
   ])
 }
 
@@ -56,6 +58,23 @@ module "storage" {
   sample_bucket_lifecycle_age_days = var.sample_bucket_lifecycle_age_days
   output_bucket_lifecycle_age_days = var.output_bucket_lifecycle_age_days
   labels                           = local.labels
+
+  depends_on = [google_project_service.required]
+}
+
+module "frontend" {
+  source = "../../modules/frontend-cloud-run"
+
+  project_id              = var.project_id
+  region                  = var.region
+  repository_id           = var.frontend_artifact_repository_id
+  frontend_enabled        = var.frontend_enabled
+  frontend_public         = var.frontend_public
+  frontend_image          = var.frontend_image
+  frontend_service_name   = var.frontend_service_name
+  frontend_container_port = var.frontend_container_port
+  frontend_env            = var.frontend_env
+  labels                  = local.labels
 
   depends_on = [google_project_service.required]
 }

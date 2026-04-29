@@ -18,6 +18,13 @@ backend_env = {
   LOG_LEVEL = "INFO"
 }
 
+frontend_enabled = false
+frontend_public  = false
+
+frontend_env = {
+  NEXT_PUBLIC_API_BASE_URL = "http://203.0.113.10:8000"
+}
+
 backend_secret_env = {
   LLM_API_KEY    = "replace-me"
   VAST_API_KEY   = "replace-me"

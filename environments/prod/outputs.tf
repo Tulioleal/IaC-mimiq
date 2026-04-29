@@ -37,3 +37,18 @@ output "outputs_bucket_name" {
   description = "GCS bucket name used for generated audio outputs."
   value       = module.storage.outputs_bucket_name
 }
+
+output "artifact_registry_repository_url" {
+  description = "Docker repository URL for frontend images."
+  value       = module.frontend.artifact_registry_repository_url
+}
+
+output "frontend_service_name" {
+  description = "Cloud Run frontend service name, or null when disabled."
+  value       = module.frontend.frontend_service_name
+}
+
+output "frontend_service_url" {
+  description = "Cloud Run frontend service URL, or null when disabled."
+  value       = module.frontend.frontend_service_url
+}
