@@ -160,6 +160,18 @@ variable "frontend_env" {
   default     = {}
 }
 
+variable "frontend_backend_api_base_url" {
+  description = "Optional backend API base URL injected into frontend Cloud Run. If empty, derive from the backend VM external IP."
+  type        = string
+  default     = ""
+}
+
+variable "frontend_public_ws_base_url" {
+  description = "Optional public WebSocket base URL injected into frontend Cloud Run. If empty, derive from the backend VM external IP."
+  type        = string
+  default     = ""
+}
+
 variable "bucket_name_prefix" {
   description = "Globally unique prefix used to derive the samples and outputs bucket names."
   type        = string

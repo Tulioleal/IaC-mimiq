@@ -2,6 +2,17 @@ locals {
   resource_prefix = "${var.app_name}-${var.environment}"
   network_tags    = ["${local.resource_prefix}-backend"]
 
+  derived_frontend_backend_api_base_url = "http://${module.compute.external_ip}:${var.backend_service_port}"
+  derived_frontend_public_ws_base_url   = "ws://${module.compute.external_ip}:${var.backend_service_port}"
+
+  frontend_runtime_env = merge(
+    {
+      BACKEND_API_BASE_URL = var.frontend_backend_api_base_url != "" ? var.frontend_backend_api_base_url : local.derived_frontend_backend_api_base_url
+      PUBLIC_WS_BASE_URL   = var.frontend_public_ws_base_url != "" ? var.frontend_public_ws_base_url : local.derived_frontend_public_ws_base_url
+    },
+    var.frontend_env,
+  )
+
   labels = merge(
     {
       app         = var.app_name
@@ -73,7 +84,7 @@ module "frontend" {
   frontend_image          = var.frontend_image
   frontend_service_name   = var.frontend_service_name
   frontend_container_port = var.frontend_container_port
-  frontend_env            = var.frontend_env
+  frontend_env            = local.frontend_runtime_env
   labels                  = local.labels
 
   depends_on = [google_project_service.required]

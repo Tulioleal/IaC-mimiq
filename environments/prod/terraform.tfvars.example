@@ -21,8 +21,11 @@ backend_env = {
 frontend_enabled = false
 frontend_public  = false
 
+frontend_backend_api_base_url = "https://api.example.com"
+frontend_public_ws_base_url   = "wss://api.example.com"
+
 frontend_env = {
-  NEXT_PUBLIC_API_BASE_URL = "http://203.0.113.10:8000"
+  NEXT_PUBLIC_APP_ENV = "prod"
 }
 
 backend_secret_env = {

@@ -87,6 +87,22 @@ The production environment enables required GCP APIs and composes the modules be
 
 The backend VM receives environment variables for database connectivity, GCP project/region, and the samples/outputs buckets. Additional non-sensitive values come from `backend_env`; sensitive values come from `backend_secret_env`.
 
+The frontend Cloud Run service receives backend connection settings at runtime. By default, OpenTofu derives them from the backend VM external IP and `backend_service_port`:
+
+```text
+BACKEND_API_BASE_URL=http://<backend_external_ip>:<backend_service_port>
+PUBLIC_WS_BASE_URL=ws://<backend_external_ip>:<backend_service_port>
+```
+
+For production, prefer explicit TLS-backed overrides instead of the derived VM IP URLs:
+
+```hcl
+frontend_backend_api_base_url = "https://api.example.com"
+frontend_public_ws_base_url   = "wss://api.example.com"
+```
+
+These values are merged into `frontend_env`, so additional frontend runtime variables can still be supplied there. If `frontend_env` contains `BACKEND_API_BASE_URL` or `PUBLIC_WS_BASE_URL`, that explicit map value takes precedence.
+
 ## GitHub Actions Apply
 
 `.github/workflows/apply.yml` runs on pushes to `main` that change Terraform/OpenTofu files or the workflow itself. It:
@@ -102,4 +118,6 @@ The backend VM receives environment variables for database connectivity, GCP pro
 - Database and application secrets can be injected through `backend_secret_env`. Those values are marked sensitive in OpenTofu, but they still become part of state and instance metadata because of the startup script approach. Moving secrets to Secret Manager is a sensible next hardening step.
 - `frontend_enabled` controls whether Cloud Run is created. The Artifact Registry repository is always created for frontend images.
 - `frontend_public` grants `allUsers` the Cloud Run invoker role when public frontend access is desired.
+- `frontend_backend_api_base_url` and `frontend_public_ws_base_url` let operators inject HTTPS/WSS production domains into the frontend without rebuilding the Docker image. If left empty, OpenTofu derives HTTP/WS URLs from the backend VM external IP.
+- Browser WebSockets from an HTTPS frontend require `wss://`; the derived `ws://<ip>:<port>` value is only suitable for early non-TLS testing.
 - Bucket names must be globally unique in GCS. `bucket_name_prefix` should therefore be organization-specific.

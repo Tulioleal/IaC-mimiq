@@ -52,3 +52,13 @@ output "frontend_service_url" {
   description = "Cloud Run frontend service URL, or null when disabled."
   value       = module.frontend.frontend_service_url
 }
+
+output "frontend_backend_api_base_url" {
+  description = "Effective backend API base URL injected into the frontend runtime environment."
+  value       = local.frontend_runtime_env.BACKEND_API_BASE_URL
+}
+
+output "frontend_public_ws_base_url" {
+  description = "Effective public WebSocket base URL injected into the frontend runtime environment."
+  value       = local.frontend_runtime_env.PUBLIC_WS_BASE_URL
+}
