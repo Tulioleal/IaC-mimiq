@@ -1,5 +1,5 @@
 variable "project_id" {
-  description = "GCP project ID for the PVC production stack."
+  description = "GCP project ID for the mimiq production stack."
   type        = string
 }
 
@@ -22,7 +22,7 @@ variable "environment" {
 variable "app_name" {
   description = "Application name used as the base prefix for resource names."
   type        = string
-  default     = "pvc"
+  default     = "mimiq"
 }
 
 variable "labels" {
@@ -116,7 +116,7 @@ variable "backend_secret_env" {
 variable "frontend_artifact_repository_id" {
   description = "Artifact Registry Docker repository ID for frontend images."
   type        = string
-  default     = "pvc"
+  default     = "mimiq"
 }
 
 variable "frontend_enabled" {
@@ -140,7 +140,7 @@ variable "frontend_image" {
 variable "frontend_service_name" {
   description = "Cloud Run service name for the frontend."
   type        = string
-  default     = "pvc-prod-frontend"
+  default     = "mimiq-prod-frontend"
 }
 
 variable "frontend_container_port" {
@@ -204,13 +204,13 @@ variable "db_tier" {
 variable "db_name" {
   description = "Application database name."
   type        = string
-  default     = "pvc"
+  default     = "mimiq"
 }
 
 variable "db_user_name" {
   description = "Application database username."
   type        = string
-  default     = "pvc_app"
+  default     = "mimiq_app"
 }
 
 variable "db_user_password" {
