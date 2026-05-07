@@ -8,6 +8,11 @@ variable "zone" {
   type        = string
 }
 
+variable "region" {
+  description = "Region where the backend VM is created."
+  type        = string
+}
+
 variable "name_prefix" {
   description = "Prefix used for compute resource names."
   type        = string

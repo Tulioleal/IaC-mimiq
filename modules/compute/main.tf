@@ -4,6 +4,11 @@ resource "google_service_account" "this" {
   display_name = "${var.name_prefix} backend VM"
 }
 
+resource "google_compute_address" "backend_ip" {
+  name   = "${var.name_prefix}-backend-ip"
+  region = var.region
+}
+
 resource "google_compute_instance" "this" {
   project      = var.project_id
   zone         = var.zone
@@ -26,7 +31,9 @@ resource "google_compute_instance" "this" {
     network    = var.network_self_link
     subnetwork = var.subnetwork_self_link
 
-    access_config {}
+    access_config {
+      nat_ip = google_compute_address.backend_ip.address
+    }
   }
 
   metadata_startup_script = templatefile("${path.module}/templates/startup.sh.tftpl", {
@@ -34,6 +41,8 @@ resource "google_compute_instance" "this" {
     container_port   = var.backend_container_port
     environment_json = jsonencode(var.environment_variables)
     service_port     = var.backend_service_port
+    backend_ip       = google_compute_address.backend_ip.address
+    backend_port     = var.backend_service_port
   })
 
   service_account {
