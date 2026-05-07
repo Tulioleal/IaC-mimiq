@@ -13,6 +13,14 @@ output "backend_internal_ip" {
   value       = module.compute.internal_ip
 }
 
+output "backend_url" {
+  value = "http://${google_compute_address.backend_ip.address}:${var.backend_service_port}"
+}
+
+output "backend_ws_url" {
+  value = "ws://${google_compute_address.backend_ip.address}:${var.backend_service_port}/internal/tts-worker/ws"
+}
+
 output "backend_service_account_email" {
   description = "Service account attached to the backend VM."
   value       = module.compute.service_account_email

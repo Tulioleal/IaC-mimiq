@@ -21,11 +21,3 @@ output "external_ip" {
 output "backend_public_ip" {
   value = google_compute_address.backend_ip.address
 }
-
-output "backend_url" {
-  value = "http://${google_compute_address.backend_ip.address}:${var.backend_service_port}"
-}
-
-output "backend_ws_url" {
-  value = "ws://${google_compute_address.backend_ip.address}:${var.backend_service_port}/internal/tts-worker/ws"
-}
