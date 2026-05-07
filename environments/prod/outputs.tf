@@ -14,11 +14,13 @@ output "backend_internal_ip" {
 }
 
 output "backend_url" {
-  value = "http://${google_compute_address.backend_ip.address}:${var.backend_service_port}"
+  description = "Public URL to access the backend service."
+  value       = module.compute.backend_url
 }
 
 output "backend_ws_url" {
-  value = "ws://${google_compute_address.backend_ip.address}:${var.backend_service_port}/internal/tts-worker/ws"
+  description = "Public WebSocket URL to access the backend service."
+  value       = module.compute.backend_ws_url
 }
 
 output "backend_service_account_email" {
