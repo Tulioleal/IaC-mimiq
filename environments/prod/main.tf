@@ -140,9 +140,6 @@ module "compute" {
       GCP_REGION        = var.region
       GCS_OUTPUT_BUCKET = module.storage.outputs_bucket_name
       GCS_SAMPLE_BUCKET = module.storage.samples_bucket_name
-      BACKEND_PUBLIC_IP = compute.backend_public_ip
-      BACKEND_URL       = "http://${module.compute.backend_public_ip}:${backend.service_port}"
-      BACKEND_WS_URL    = "ws://${module.compute.backend_public_ip}:${backend.service_port}/internal/tts-worker/ws"
     },
     var.backend_env,
     var.backend_secret_env,

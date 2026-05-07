@@ -37,12 +37,19 @@ resource "google_compute_instance" "this" {
   }
 
   metadata_startup_script = templatefile("${path.module}/templates/startup.sh.tftpl", {
-    container_image  = var.backend_container_image
-    container_port   = var.backend_container_port
-    environment_json = jsonencode(var.environment_variables)
-    service_port     = var.backend_service_port
-    backend_ip       = google_compute_address.backend_ip.address
-    backend_port     = var.backend_service_port
+    container_image = var.backend_container_image
+    container_port  = var.backend_container_port
+    environment_json = jsonencode(merge(
+      var.environment_variables,
+      {
+        BACKEND_PUBLIC_IP = google_compute_address.backend_ip.address
+        BACKEND_URL       = "http://${google_compute_address.backend_ip.address}:${var.backend_service_port}"
+        BACKEND_WS_URL    = "ws://${google_compute_address.backend_ip.address}:${var.backend_service_port}/internal/tts-worker/ws"
+      }
+    ))
+    service_port = var.backend_service_port
+    backend_ip   = google_compute_address.backend_ip.address
+    backend_port = var.backend_service_port
   })
 
   service_account {
