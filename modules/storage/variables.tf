@@ -28,3 +28,9 @@ variable "labels" {
   type        = map(string)
   default     = {}
 }
+
+variable "bucket_force_destroy" {
+  description = "Whether to force destroy the Cloud Storage bucket when the module is destroyed."
+  type        = bool
+  default     = false
+}

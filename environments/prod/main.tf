@@ -69,6 +69,7 @@ module "storage" {
   sample_bucket_lifecycle_age_days = var.sample_bucket_lifecycle_age_days
   output_bucket_lifecycle_age_days = var.output_bucket_lifecycle_age_days
   labels                           = local.labels
+  bucket_force_destroy             = var.bucket_force_destroy
 
   depends_on = [google_project_service.required]
 }
