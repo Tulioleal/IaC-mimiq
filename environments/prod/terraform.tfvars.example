@@ -9,13 +9,32 @@ allowed_ssh_cidrs = [
 ]
 
 allowed_app_cidrs = [
-  "203.0.113.10/32",
+  # RunPod egress IPs can vary. Keep backend internal routes protected by HTTPS/WSS,
+  # INTERNAL_SECRET, and backend auth middleware rather than fixed source CIDRs.
+  "0.0.0.0/0",
 ]
 
 backend_container_image = "ghcr.io/my-org/pvc-backend:latest"
 
 backend_env = {
-  LOG_LEVEL = "INFO"
+  LOG_LEVEL                  = "INFO"
+  TTS_PROVIDER               = "runpod"
+  RUNPOD_API_URL             = "https://rest.runpod.io/v1"
+  RUNPOD_POD_NAME            = "pvc-xtts"
+  RUNPOD_IMAGE_NAME          = "<dockerhub-user>/pvc-tts:latest"
+  RUNPOD_GPU_TYPE_IDS        = "NVIDIA RTX 4090,NVIDIA RTX 3090,NVIDIA RTX A5000,NVIDIA A40"
+  RUNPOD_GPU_TYPE_PRIORITY   = "availability"
+  RUNPOD_MIN_RAM_PER_GPU     = "16"
+  RUNPOD_MIN_VCPU_PER_GPU    = "4"
+  RUNPOD_VOLUME_GB           = "40"
+  RUNPOD_CONTAINER_DISK_GB   = "50"
+  RUNPOD_PORTS               = "8000/http"
+  RUNPOD_INTERRUPTIBLE       = "true"
+  RUNPOD_START_RETRY_SECONDS = "300"
+  RUNPOD_SHUTDOWN_ACTION     = "delete"
+  TTS_IDLE_TIMEOUT_SECONDS   = "1800"
+  BACKEND_URL                = "https://api.example.com"
+  BACKEND_WS_URL             = "wss://api.example.com/internal/tts-worker/ws"
 }
 
 frontend_enabled = false
@@ -29,9 +48,10 @@ frontend_env = {
 }
 
 backend_secret_env = {
-  LLM_API_KEY    = "replace-me"
-  VAST_API_KEY   = "replace-me"
-  X_ADMIN_KEY    = "replace-me"
+  LLM_API_KEY     = "replace-me"
+  RUNPOD_API_KEY  = "replace-me"
+  INTERNAL_SECRET = "replace-me"
+  X_ADMIN_KEY     = "replace-me"
 }
 
 db_user_password = "replace-me"

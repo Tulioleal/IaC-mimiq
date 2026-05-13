@@ -16,7 +16,7 @@ This stack provisions:
 - An Artifact Registry Docker repository for frontend images
 - An optional Cloud Run service for the Next.js frontend
 
-This repository does not provision Vast.ai GPU instances. GPU startup remains part of the backend and TTS GitHub Actions control path described in the PRD.
+This repository does not provision RunPod pods. GPU provider lifecycle is owned by the backend, which receives RunPod configuration and secrets at runtime. The XTTS project only publishes the worker image consumed by RunPod.
 
 ## Layout
 
@@ -87,6 +87,62 @@ The production environment enables required GCP APIs and composes the modules be
 
 The backend VM receives environment variables for database connectivity, GCP project/region, and the samples/outputs buckets. Additional non-sensitive values come from `backend_env`; sensitive values come from `backend_secret_env`.
 
+The backend owns RunPod pod lifecycle for TTS. Configure these backend values for production:
+
+```hcl
+backend_env = {
+  TTS_PROVIDER               = "runpod"
+  RUNPOD_API_URL             = "https://rest.runpod.io/v1"
+  RUNPOD_POD_NAME            = "pvc-xtts"
+  RUNPOD_IMAGE_NAME          = "<dockerhub-user>/pvc-tts:latest"
+  RUNPOD_GPU_TYPE_IDS        = "NVIDIA RTX 4090,NVIDIA RTX 3090,NVIDIA RTX A5000,NVIDIA A40"
+  RUNPOD_GPU_TYPE_PRIORITY   = "availability"
+  RUNPOD_MIN_RAM_PER_GPU     = "16"
+  RUNPOD_MIN_VCPU_PER_GPU    = "4"
+  RUNPOD_VOLUME_GB           = "40"
+  RUNPOD_CONTAINER_DISK_GB   = "50"
+  RUNPOD_PORTS               = "8000/http"
+  RUNPOD_INTERRUPTIBLE       = "true"
+  RUNPOD_START_RETRY_SECONDS = "300"
+  RUNPOD_SHUTDOWN_ACTION     = "delete"
+  TTS_IDLE_TIMEOUT_SECONDS   = "1800"
+  BACKEND_URL                = "https://api.example.com"
+  BACKEND_WS_URL             = "wss://api.example.com/internal/tts-worker/ws"
+}
+
+backend_secret_env = {
+  RUNPOD_API_KEY  = "replace-me"
+  INTERNAL_SECRET = "replace-me"
+}
+```
+
+`RUNPOD_API_KEY` is a backend secret because the backend creates, monitors, and deletes idle RunPod pods. With the current VM startup-script approach, values in `backend_secret_env` are sensitive in OpenTofu output but still become part of OpenTofu state and Compute Engine instance metadata. Use an out-of-band secret injection path before adding the key here if storing it in state is not acceptable.
+
+RunPod workers must call back to the backend over public HTTPS/WSS routes, including `/internal/tts-worker/ws`, `/internal/jobs/{job_id}/speaker.wav`, `/internal/jobs/{job_id}/result`, and `/internal/tts-offline`. Set public callback URLs in `backend_env` so the VM startup script exports reachable URLs to the backend container:
+
+```hcl
+backend_env = {
+  BACKEND_URL    = "https://api.example.com"
+  BACKEND_WS_URL = "wss://api.example.com/internal/tts-worker/ws"
+}
+```
+
+If `BACKEND_WS_URL` is omitted, the compute module derives it from `BACKEND_URL`:
+
+```text
+BACKEND_URL=https://api.example.com
+BACKEND_WS_URL=wss://api.example.com/internal/tts-worker/ws
+```
+
+For compatibility with older tfvars, `BACKEND_PUBLIC_URL` is still accepted as the callback base URL when `BACKEND_URL` is not set. If both are empty, the module falls back to VM-IP URLs for simple non-TLS deployments:
+
+```text
+BACKEND_URL=http://<backend_external_ip>:<backend_service_port>
+BACKEND_WS_URL=ws://<backend_external_ip>:<backend_service_port>/internal/tts-worker/ws
+```
+
+Because RunPod egress IPs can vary, production ingress cannot usually rely on a stable RunPod CIDR allowlist. If exposing the backend app port broadly with `allowed_app_cidrs = ["0.0.0.0/0"]`, protect internal routes with HTTPS/WSS, `INTERNAL_SECRET`, and backend authentication middleware.
+
 The frontend Cloud Run service receives backend connection settings at runtime. By default, OpenTofu derives them from the backend VM external IP and `backend_service_port`:
 
 ```text
@@ -116,8 +172,12 @@ These values are merged into `frontend_env`, so additional frontend runtime vari
 
 - `backend_container_image` is optional. If you leave it empty, the VM still installs Docker and writes the environment file, but it will not start a backend container yet.
 - Database and application secrets can be injected through `backend_secret_env`. Those values are marked sensitive in OpenTofu, but they still become part of state and instance metadata because of the startup script approach. Moving secrets to Secret Manager is a sensible next hardening step.
+- Infra does not create RunPod pods. The backend owns RunPod pod lifecycle and deletes idle pods according to `TTS_IDLE_TIMEOUT_SECONDS` and `RUNPOD_SHUTDOWN_ACTION`.
+- The XTTS project only publishes the worker image referenced by `RUNPOD_IMAGE_NAME`.
 - `frontend_enabled` controls whether Cloud Run is created. The Artifact Registry repository is always created for frontend images.
 - `frontend_public` grants `allUsers` the Cloud Run invoker role when public frontend access is desired.
 - `frontend_backend_api_base_url` and `frontend_public_ws_base_url` let operators inject HTTPS/WSS production domains into the frontend without rebuilding the Docker image. If left empty, OpenTofu derives HTTP/WS URLs from the backend VM external IP.
+- `BACKEND_URL` and `BACKEND_WS_URL` let operators inject the HTTPS/WSS production backend callback URLs used by RunPod workers. If left empty, OpenTofu derives HTTP/WS backend callback URLs from the backend VM external IP.
+- `BACKEND_PUBLIC_URL` remains supported as a callback base URL for older tfvars, but new configuration should use `BACKEND_URL` and `BACKEND_WS_URL`.
 - Browser WebSockets from an HTTPS frontend require `wss://`; the derived `ws://<ip>:<port>` value is only suitable for early non-TLS testing.
 - Bucket names must be globally unique in GCS. `bucket_name_prefix` should therefore be organization-specific.

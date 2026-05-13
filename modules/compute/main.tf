@@ -1,3 +1,17 @@
+locals {
+  explicit_backend_url    = trimsuffix(lookup(var.environment_variables, "BACKEND_URL", ""), "/")
+  explicit_backend_ws_url = trimsuffix(lookup(var.environment_variables, "BACKEND_WS_URL", ""), "/")
+  backend_public_url      = trimsuffix(lookup(var.environment_variables, "BACKEND_PUBLIC_URL", ""), "/")
+  callback_base_url       = local.explicit_backend_url != "" ? local.explicit_backend_url : local.backend_public_url
+  backend_url             = local.callback_base_url != "" ? local.callback_base_url : "http://${google_compute_address.backend_ip.address}:${var.backend_service_port}"
+  backend_ws_base_url = local.callback_base_url != "" ? (
+    startswith(local.callback_base_url, "https://") ? "wss://${trimprefix(local.callback_base_url, "https://")}" : (
+      startswith(local.callback_base_url, "http://") ? "ws://${trimprefix(local.callback_base_url, "http://")}" : local.callback_base_url
+    )
+  ) : "ws://${google_compute_address.backend_ip.address}:${var.backend_service_port}"
+  backend_ws_url = local.explicit_backend_ws_url != "" ? local.explicit_backend_ws_url : "${local.backend_ws_base_url}/internal/tts-worker/ws"
+}
+
 resource "google_service_account" "this" {
   project      = var.project_id
   account_id   = var.service_account_name
@@ -43,8 +57,8 @@ resource "google_compute_instance" "this" {
       var.environment_variables,
       {
         BACKEND_PUBLIC_IP = google_compute_address.backend_ip.address
-        BACKEND_URL       = "http://${google_compute_address.backend_ip.address}:${var.backend_service_port}"
-        BACKEND_WS_URL    = "ws://${google_compute_address.backend_ip.address}:${var.backend_service_port}/internal/tts-worker/ws"
+        BACKEND_URL       = local.backend_url
+        BACKEND_WS_URL    = local.backend_ws_url
       }
     ))
     service_port = var.backend_service_port

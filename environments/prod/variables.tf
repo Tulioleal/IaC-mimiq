@@ -49,7 +49,7 @@ variable "allowed_ssh_cidrs" {
 }
 
 variable "allowed_app_cidrs" {
-  description = "CIDR blocks allowed to reach the backend application port. Leave empty to disable public app ingress."
+  description = "CIDR blocks allowed to reach the backend application port. Leave empty to disable public app ingress; RunPod callbacks may require broad ingress plus backend auth."
   type        = list(string)
   default     = []
 }
