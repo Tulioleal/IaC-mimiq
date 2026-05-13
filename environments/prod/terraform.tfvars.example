@@ -9,8 +9,8 @@ allowed_ssh_cidrs = [
 ]
 
 allowed_app_cidrs = [
-  # RunPod egress IPs can vary. Keep backend internal routes protected by HTTPS/WSS,
-  # INTERNAL_SECRET, and backend auth middleware rather than fixed source CIDRs.
+  # RunPod egress IPs can vary, so the demo backend app port is public.
+  # Keep backend internal routes protected by INTERNAL_SECRET and backend auth middleware.
   "0.0.0.0/0",
 ]
 
@@ -33,15 +33,15 @@ backend_env = {
   RUNPOD_START_RETRY_SECONDS = "300"
   RUNPOD_SHUTDOWN_ACTION     = "delete"
   TTS_IDLE_TIMEOUT_SECONDS   = "1800"
-  BACKEND_URL                = "https://api.example.com"
-  BACKEND_WS_URL             = "wss://api.example.com/internal/tts-worker/ws"
+  BACKEND_URL                = "http://<backend-public-ip>:8000"
+  BACKEND_WS_URL             = "ws://<backend-public-ip>:8000/internal/tts-worker/ws"
 }
 
 frontend_enabled = false
 frontend_public  = false
 
-frontend_backend_api_base_url = "https://api.example.com"
-frontend_public_ws_base_url   = "wss://api.example.com"
+frontend_backend_api_base_url = "http://<backend-public-ip>:8000"
+frontend_public_ws_base_url   = "ws://<backend-public-ip>:8000"
 
 frontend_env = {
   NEXT_PUBLIC_APP_ENV = "prod"
