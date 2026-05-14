@@ -8,15 +8,15 @@ resource "google_artifact_registry_repository" "frontend" {
 }
 
 resource "google_cloud_run_v2_service" "frontend" {
-  count = var.frontend_enabled ? 1 : 0
-
-  project  = var.project_id
-  location = var.region
-  name     = var.frontend_service_name
-  ingress  = "INGRESS_TRAFFIC_ALL"
-  labels   = var.labels
-
-  deletion_protection = var.deletion_protection
+  provider             = google-beta
+  count                = var.frontend_enabled ? 1 : 0
+  project              = var.project_id
+  location             = var.region
+  name                 = var.frontend_service_name
+  ingress              = "INGRESS_TRAFFIC_ALL"
+  labels               = var.labels
+  invoker_iam_disabled = var.frontend_public
+  deletion_protection  = var.deletion_protection
 
   template {
     labels = var.labels
@@ -47,14 +47,4 @@ resource "google_cloud_run_v2_service" "frontend" {
   }
 
   depends_on = [google_artifact_registry_repository.frontend]
-}
-
-resource "google_cloud_run_v2_service_iam_member" "public_invoker" {
-  count = var.frontend_enabled && var.frontend_public ? 1 : 0
-
-  project  = var.project_id
-  location = var.region
-  name     = google_cloud_run_v2_service.frontend[0].name
-  role     = "roles/run.invoker"
-  member   = "allUsers"
 }
