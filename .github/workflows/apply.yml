@@ -25,6 +25,9 @@ env:
   TF_VAR_backend_secret_env: ${{ secrets.TF_VAR_backend_secret_env }}
   TF_VAR_allowed_app_cidrs: ${{ vars.ALLOWED_APP_CIDRS }}
   TF_VAR_backend_container_image: ${{ vars.BACKEND_CONTAINER_IMAGE }}
+  TF_VAR_frontend_image: ${{ vars.FRONTEND_IMAGE }}
+  TF_VAR_frontend_enabled: ${{ vars.FRONTEND_ENABLED }}
+  TF_VAR_frontend_public: ${{ vars.FRONTEND_PUBLIC }}
 jobs:
   apply:
     name: Apply production infrastructure
