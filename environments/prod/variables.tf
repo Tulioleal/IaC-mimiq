@@ -122,13 +122,13 @@ variable "frontend_artifact_repository_id" {
 variable "frontend_enabled" {
   description = "Whether to create the Cloud Run frontend service."
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "frontend_public" {
   description = "Whether the frontend Cloud Run service allows unauthenticated public access."
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "frontend_image" {

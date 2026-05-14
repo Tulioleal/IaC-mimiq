@@ -28,6 +28,16 @@ output "backend_service_account_email" {
   value       = module.compute.service_account_email
 }
 
+output "gcp_project_id" {
+  description = "GCP project ID used by frontend GitHub Actions."
+  value       = var.project_id
+}
+
+output "gcp_region" {
+  description = "GCP region used by frontend GitHub Actions."
+  value       = var.region
+}
+
 output "database_private_ip" {
   description = "Private IP address of the Cloud SQL instance."
   value       = module.database.private_ip_address
@@ -51,6 +61,11 @@ output "outputs_bucket_name" {
 output "artifact_registry_repository_url" {
   description = "Docker repository URL for frontend images."
   value       = module.frontend.artifact_registry_repository_url
+}
+
+output "artifact_registry_repository_id" {
+  description = "Artifact Registry repository ID used by frontend GitHub Actions."
+  value       = module.frontend.artifact_registry_repository_id
 }
 
 output "frontend_service_name" {
