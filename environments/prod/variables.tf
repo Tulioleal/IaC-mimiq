@@ -172,6 +172,12 @@ variable "frontend_public_ws_base_url" {
   default     = ""
 }
 
+variable "frontend_delete_protection" {
+  description = "Whether to enable deletion protection for the Cloud Run frontend service."
+  type        = bool
+  default     = true
+}
+
 variable "bucket_name_prefix" {
   description = "Globally unique prefix used to derive the samples and outputs bucket names."
   type        = string

@@ -16,6 +16,8 @@ resource "google_cloud_run_v2_service" "frontend" {
   ingress  = "INGRESS_TRAFFIC_ALL"
   labels   = var.labels
 
+  deletion_protection = var.deletion_protection
+
   template {
     labels = var.labels
 

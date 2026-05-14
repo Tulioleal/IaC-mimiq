@@ -34,6 +34,8 @@ resource "google_storage_bucket" "outputs" {
   public_access_prevention    = "enforced"
   labels                      = var.labels
 
+  force_destroy = var.bucket_force_destroy
+
   lifecycle_rule {
     action {
       type = "Delete"

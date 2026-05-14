@@ -87,6 +87,7 @@ module "frontend" {
   frontend_container_port = var.frontend_container_port
   frontend_env            = local.frontend_runtime_env
   labels                  = local.labels
+  deletion_protection     = var.frontend_delete_protection
 
   depends_on = [google_project_service.required]
 }
