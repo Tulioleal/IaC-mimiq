@@ -27,6 +27,7 @@ env:
   TF_VAR_backend_container_image: ${{ vars.BACKEND_CONTAINER_IMAGE }}
   TF_VAR_frontend_image: ${{ vars.FRONTEND_IMAGE }}
   TF_VAR_frontend_enabled: ${{ vars.FRONTEND_ENABLED }}
+  TF_VAR_frontend_public: ${{ vars.FRONTEND_PUBLIC }}
   TF_VAR_frontend_delete_protection: ${{ vars.FRONTEND_DELETE_PROTECTION }}
 jobs:
   apply:
